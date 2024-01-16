@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './user/user.module';
+import { AppController } from './app.controller';
 @Module({
   imports: [
     HttpModule,
@@ -17,6 +18,7 @@ import { UserModule } from './user/user.module';
     DatabaseModule,
   ],
   providers: [],
+  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

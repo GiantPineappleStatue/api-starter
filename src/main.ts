@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const port = 3005;
   // app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
@@ -19,8 +21,12 @@ async function bootstrap() {
     .addTag('starter')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('swagger', app, document);
   app.setGlobalPrefix('api');
+  app.useStaticAssets(join(__dirname, '.', 'public'));
+  app.setBaseViewsDir(join(__dirname, '.', 'views'));
+  app.setViewEngine('hbs');
+
   await app.listen(port);
   console.log(`Server is running on http://localhost:${port}`);
 }

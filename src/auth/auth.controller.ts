@@ -2,9 +2,11 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Post,
+  Render,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +18,16 @@ import { SubmittedEmailPasswordDto } from '../user/dto/auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+  @Get()
+  @Render('index')
+  root() {}
+  @Get('login-page')
+  @Render('login-page')
+  getLoginPage() {}
+
+  @Get('create-user-page')
+  @Render('create-user-page')
+  getCreateUserPage() {}
   @Post('new-user')
   createUser(@Body() unhashedNewUser: UnhashedNewUserDto) {
     if (!unhashedNewUser) {
