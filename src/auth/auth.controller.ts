@@ -7,11 +7,11 @@ import {
   HttpStatus,
   Post,
   Render,
-  Req,
-  UseGuards,
+  Res,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
 import { UnhashedNewUserDto } from '../user/dto/user.dto';
 import { SubmittedEmailPasswordDto } from '../user/dto/auth.dto';
 
@@ -44,21 +44,30 @@ export class AuthController {
   }
 
   @Post('signin')
-  async signinUser(@Body() submittedEmailPassword: SubmittedEmailPasswordDto) {
+  async signinUser(
+    @Body() submittedEmailPassword: SubmittedEmailPasswordDto,
+    @Res() res: Response,
+  ): Promise<void> {
     if (!submittedEmailPassword) {
       throw new HttpException(
-        'SignIn failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Signin credentials missing',
+        HttpStatus.BAD_REQUEST,
       );
     }
+
     try {
-      return {
-        token: await this.authService.validateEmailPassword(
-          submittedEmailPassword,
-        ),
-      };
+      const userToken = await this.authService.validateEmailPassword(
+        submittedEmailPassword,
+      );
+      if (!userToken) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      const callbackUrl = `http://localhost:5173/callback?code=${encodeURIComponent(userToken)}`;
+      res.redirect(callbackUrl);
     } catch (error: any) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      const errorMessage = error.message || 'Internal server error';
+      const statusCode = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
+      throw new HttpException(errorMessage, statusCode);
     }
   }
 }
